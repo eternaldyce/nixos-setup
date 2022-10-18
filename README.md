@@ -228,7 +228,7 @@ This would go into `/etc/nixos/configuration.nix`:
 
 ```
   boot.initrd.luks.devices = { # nixos must be informed of luks
-     crypted = {
+     crypted = { # you will want the blkid of the device + header
         device = "/dev/disk/by-partuuid/<yours goes here>"; # $ blkid
         header = "/dev/disk/by-partuuid/<yours goes here>"; # $ blkid
         allowDiscards = true; # device = SSD
