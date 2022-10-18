@@ -195,13 +195,13 @@ Swap:
 
 ## Mount the Pools
 ```
-# mount -t zfs "${POOL/local/root" /mnt
+# mount -t zfs "${POOL}/local/root" /mnt
 # mkdir /mnt/nix
-# mount -t zfs "${POOL/local/nix" /mnt/nix
+# mount -t zfs "${POOL}/local/nix" /mnt/nix
 # mkdir /mnt/home
-# mount -t zfs "${POOL/safe/home" /mnt/home
+# mount -t zfs "${POOL}/safe/home" /mnt/home
 # mkdir /mnt/persist
-# mount -t zfs "${POOL/safe/persist" /mnt/persist
+# mount -t zfs "${POOL}/safe/persist" /mnt/persist
 ```
 
 ```
@@ -227,6 +227,27 @@ configuration file first, to make it easier to troubleshoot.
 This would go into `/etc/nixos/configuration.nix`:
 
 ```
+  boot.initrd.luks.devices = { # nixos must be informed of luks
+     crypted = {
+        device = "/dev/disk/by-partuuid/<yours goes here>"; # $ blkid
+        header = "/dev/disk/by-partuuid/<yours goes here>"; # $ blkid
+        allowDiscards = true; # device = SSD
+        preLVM = true;
+     };
+  };
+  networking = {
+     hostName = "<yours here>";
+     hostId = "<yours here>"; # $ head -c 8 /etc/machine-id
+     wireless.enable = false; # wpa_supplicant or network manager
+     networkmanager.enable = true; # cannot be enabled with wpa_supplicant
+     useDHCP = false; # global, deprecated
+     interfaces = {
+        wlo1.useDHCP = true;
+        enp2s0.useDHCP = true;
+     };
+  };
+
+
 services.zfs.trim.enable = true;
 boot.loader.grub.copyKernels = true;  # https://nixos.wiki/wiki/ZFS#What_works
 boot.kernelParams = [ "nohibernate" ];
@@ -273,7 +294,7 @@ Then import the zpool. You may need the ID of the zpool.
 
 ```
 # zpool import -d /dev/mapper/vg1-root
-# zpool import ####
+# zpool import <ID here>
 ```
 
 Then mount all the folders again:
